@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blindmaster — Sales Call</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #132a45;
+    --navy-light: #1c3a5e;
+    --accent: #e2a53a;
+    --border: #e1e5ea;
+    --bg: #f4f6f8;
+    --text: #1b2733;
+    --muted: #6b7684;
+    --danger: #d64545;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header.brand {
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    color: #fff;
+    padding: 24px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  header.brand .logo { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+  header.brand .logo .dot { color: var(--accent); }
+  header.brand .tagline { font-size: 11px; letter-spacing: 2px; opacity: 0.75; margin-top: 2px; }
+  header.brand .title { font-size: 20px; font-weight: 700; }
+
+  main { max-width: 760px; margin: 24px auto; padding: 0 16px 96px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(20, 30, 45, 0.06);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .badge {
+    flex: none;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .section-head h2 {
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--navy);
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  label .req { color: var(--danger); margin-left: 2px; }
+
+  input[type=text], input[type=date], input[type=time], select, textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: #fff;
+  }
+  textarea { min-height: 120px; resize: vertical; }
+  .field { margin-bottom: 14px; }
+
+  .rep-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .rep-row select { flex: 1; }
+  .rep-row button { flex: none; border: none; background: none; color: var(--danger); cursor: pointer; font-size: 18px; }
+  .add-rep {
+    background: none; border: 1px dashed var(--border); color: var(--navy);
+    padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  .collateral-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 560px) { .collateral-grid { grid-template-columns: 1fr; } }
+  .upload-tile {
+    border: 1px solid var(--border);
+    background: #f9fafc;
+    border-radius: 10px;
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .upload-tile .icon { font-size: 26px; }
+  .upload-tile .label { font-weight: 700; font-size: 13px; margin-top: 8px; color: var(--navy); }
+  .upload-tile .hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .upload-tile input { display: none; }
+  .file-list { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12px; color: var(--muted); text-align: left; }
+  .file-list li { padding: 2px 0; word-break: break-all; }
+
+  canvas#sigPad {
+    width: 100%; height: 160px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    touch-action: none;
+    background: #fff;
+  }
+  .sig-actions { margin-top: 8px; }
+  .sig-actions button {
+    border: 1px solid var(--border); background: #fff; border-radius: 6px;
+    padding: 6px 12px; font-size: 12px; cursor: pointer;
+  }
+  .sig-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .total-time {
+    background: #eef2fb; border-radius: 8px; padding: 11px 12px;
+    color: var(--navy); font-weight: 600; font-size: 14px;
+  }
+
+  .submit-bar {
+    position: sticky; bottom: 0;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    padding: 16px 0 8px;
+  }
+  button.submit {
+    width: 100%;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+  }
+  button.submit:disabled { opacity: 0.6; cursor: default; }
+  .status { text-align: center; font-size: 13px; margin-top: 10px; }
+  .status.error { color: var(--danger); }
+  .status.ok { color: #1a7f4c; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px 16px 32px;
+  }
+</style>
+</head>
+<body>
+
+<header class="brand">
+  <div>
+    <div class="logo">BLINDMASTER<span class="dot">.</span></div>
+    <div class="tagline">THE COMPLETE OUTDOOR ROOM</div>
+  </div>
+  <div class="title">Sales Call</div>
+</header>
+
+<main>
+  <form id="scForm">
+
+    <section class="card">
+      <div class="section-head"><span class="badge">1</span><h2>Job Details</h2></div>
+      <div class="grid2">
+        <div class="field">
+          <label>Client Name<span class="req">*</span></label>
+          <input type="text" id="clientName" required>
+        </div>
+        <div class="field">
+          <label>Opportunity Reference</label>
+          <input type="text" id="jobRef" placeholder="e.g. 9791 or Opp #9791">
+        </div>
+        <div class="field">
+          <label>Site Address<span class="req">*</span></label>
+          <input type="text" id="siteAddress" required>
+        </div>
+        <div class="field">
+          <label>Date of Sales Call<span class="req">*</span></label>
+          <input type="date" id="callDate" required>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head"><span class="badge">2</span><h2>Attendees</h2></div>
+      <div class="field">
+        <label>Customer(s) Present</label>
+        <input type="text" id="customerPresent">
+      </div>
+      <label>Sales Rep(s) on Site</label>
+      <div id="repRows"></div>
+      <button type="button" class="add-rep" id="addRep">+ Add rep</button>
+    </section>
+
+    <section class="card">
+      <div class="section-head"><span class="badge">3</span><h2>Sales Call Notes</h2></div>
+      <div class="field">
+        <label>Customer Requirements / Notes<span class="req">*</span></label>
+        <textarea id="notes" required placeholder="Products discussed, rough measurements, access notes, follow-ups needed…"></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head"><span class="badge">4</span><h2>Site Collateral</h2></div>
+      <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
+        Attach photos, videos, or voice recordings documenting the site, existing structures, or anything relevant to quoting the job.
+      </p>
+      <div class="collateral-grid">
+        <label class="upload-tile">
+          <div class="icon">📷</div>
+          <div class="label">Photos</div>
+          <div class="hint">JPG, PNG, HEIC</div>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+          <ul class="file-list" id="photoList"></ul>
+        </label>
+        <label class="upload-tile">
+          <div class="icon">🎬</div>
+          <div class="label">Videos</div>
+          <div class="hint">MP4, MOV</div>
+          <input type="file" id="videoInput" accept="video/*" capture="environment" multiple>
+          <ul class="file-list" id="videoList"></ul>
+        </label>
+        <label class="upload-tile">
+          <div class="icon">🎙️</div>
+          <div class="label">Voice Notes</div>
+          <div class="hint">MP3, M4A, WAV</div>
+          <input type="file" id="audioInput" accept="audio/*" multiple>
+          <ul class="file-list" id="audioList"></ul>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head"><span class="badge">5</span><h2>Rep Sign-Off</h2></div>
+      <div class="grid2">
+        <div class="field">
+          <label>Reporting Sales Rep<span class="req">*</span></label>
+          <select id="reportingRep" required></select>
+        </div>
+        <div class="field">
+          <label>Date Submitted</label>
+          <input type="date" id="dateSubmitted">
+        </div>
+      </div>
+      <label>Signature</label>
+      <canvas id="sigPad"></canvas>
+      <div class="sig-actions"><button type="button" id="clearSig">Clear</button></div>
+      <p class="sig-note">Or, if signing isn't possible on this device, select your name in "Reporting Sales Rep" above as your digital confirmation.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-head"><span class="badge">6</span><h2>Time on Site</h2></div>
+      <div class="grid2">
+        <div class="field">
+          <label>Start Time<span class="req">*</span></label>
+          <select id="startTime" required></select>
+        </div>
+        <div class="field">
+          <label>Finish Time<span class="req">*</span></label>
+          <select id="finishTime" required></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Total Time on Site</label>
+        <div class="total-time" id="totalTime">—</div>
+      </div>
+    </section>
+
+    <div class="submit-bar">
+      <button type="submit" class="submit" id="submitBtn">Submit Sales Call</button>
+      <div class="status" id="status"></div>
+    </div>
+  </form>
+</main>
+
+<footer>Blindmaster Pty Ltd · Sales Call · Internal Use — Retain for Client File</footer>
+
+<script>
+// ---------------------------------------------------------------------------
+// Built 2026-09-30 by copying the Check Measure form's proven shape
+// (docs/check-measure/index.html), which itself only reached this static-
+// GitHub-Pages-plus-Apps-Script-POST-API pattern after a whole hosting
+// migration off script.google.com. Starting from that file means this form
+// inherits the fix for free instead of hitting the same "Sorry, unable to
+// open the file at present" issue from scratch.
+//
+// Fields are a first-draft guess based on the same shape as Check Measure
+// (Job Details / attendees / notes / site collateral / sign-off / time on
+// site), NOT yet confirmed against a real Sales Call template the way
+// Check Measure's fields were reconstructed from an actual saved PDF —
+// there's no equivalent surviving example for Sales Call. Reconcile with
+// Jan before treating this as final.
+// ---------------------------------------------------------------------------
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnJtybFIuDUJHq0qrVVDytBICne3yv85W3yI5FcvKMBm8G0Y7hzlS-_eaw5_0XlHaC/exec';
+
+// Prefill from URL params (?client=&ref=&address=&date=), same convention
+// Check Measure and Simon's Job Report tool already use.
+const urlParams = new URLSearchParams(location.search);
+const PREFILL = {
+  client: urlParams.get('client') || '',
+  ref: urlParams.get('ref') || '',
+  address: urlParams.get('address') || '',
+  date: urlParams.get('date') || '',
+};
+
+const els = {
+  clientName: document.getElementById('clientName'),
+  jobRef: document.getElementById('jobRef'),
+  siteAddress: document.getElementById('siteAddress'),
+  callDate: document.getElementById('callDate'),
+  customerPresent: document.getElementById('customerPresent'),
+  repRows: document.getElementById('repRows'),
+  notes: document.getElementById('notes'),
+  reportingRep: document.getElementById('reportingRep'),
+  dateSubmitted: document.getElementById('dateSubmitted'),
+  startTime: document.getElementById('startTime'),
+  finishTime: document.getElementById('finishTime'),
+  totalTime: document.getElementById('totalTime'),
+  submitBtn: document.getElementById('submitBtn'),
+  status: document.getElementById('status'),
+};
+
+// ---- Prefill from URL params -------------------------------------------------
+if (PREFILL.client) els.clientName.value = PREFILL.client;
+if (PREFILL.ref) els.jobRef.value = PREFILL.ref;
+if (PREFILL.address) els.siteAddress.value = PREFILL.address;
+if (PREFILL.date) els.callDate.value = PREFILL.date;
+
+// ---- Sales rep list -----------------------------------------------------
+// Same staff roster as the Check Measure form's installer list — there's no
+// separate "sales rep" roster documented anywhere; adjust if Jan wants a
+// different/shorter list for this tool.
+const REPS = [
+  'Mark Johnson', 'Lewis Hilliard', 'Owen Nolan',
+  'Troy Breglec', 'Simon Lightfoot', 'Andrew Armstrong',
+];
+function repOptionsHtml(selected) {
+  const placeholder = `<option value="" disabled${selected ? '' : ' selected'}>Select rep&hellip;</option>`;
+  const options = REPS.map(name =>
+    `<option value="${name}"${name === selected ? ' selected' : ''}>${name}</option>`
+  ).join('');
+  return placeholder + options;
+}
+document.getElementById('reportingRep').insertAdjacentHTML('beforeend', repOptionsHtml());
+
+// ---- Sales rep rows -------------------------------------------------------
+function addRepRow(value) {
+  const row = document.createElement('div');
+  row.className = 'rep-row';
+  row.innerHTML = `<select>${repOptionsHtml(value)}</select>
+                    <button type="button" aria-label="Remove">&times;</button>`;
+  row.querySelector('button').addEventListener('click', () => row.remove());
+  els.repRows.appendChild(row);
+}
+addRepRow();
+document.getElementById('addRep').addEventListener('click', () => addRepRow());
+
+// ---- Hourly time dropdowns (6:00 AM to 5:00 PM, on the hour) ---------------
+function hourLabel(h) {
+  const period = h < 12 ? 'AM' : 'PM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return h12 + ':00 ' + period;
+}
+function buildHourOptions() {
+  let html = '<option value="" disabled selected>Select time&hellip;</option>';
+  for (let h = 6; h <= 17; h++) {
+    const value = String(h).padStart(2, '0') + ':00';
+    html += `<option value="${value}">${hourLabel(h)}</option>`;
+  }
+  return html;
+}
+document.getElementById('startTime').innerHTML = buildHourOptions();
+document.getElementById('finishTime').innerHTML = buildHourOptions();
+
+// ---- Total time on site ----------------------------------------------------
+function updateTotalTime() {
+  const [sh, sm] = (els.startTime.value || '').split(':').map(Number);
+  const [fh, fm] = (els.finishTime.value || '').split(':').map(Number);
+  if ([sh, sm, fh, fm].some(Number.isNaN)) { els.totalTime.textContent = '—'; return; }
+  let mins = (fh * 60 + fm) - (sh * 60 + sm);
+  if (mins < 0) mins += 24 * 60;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  const parts = [];
+  if (h) parts.push(h + (h === 1 ? ' hour' : ' hours'));
+  if (m) parts.push(m + (m === 1 ? ' minute' : ' minutes'));
+  els.totalTime.textContent = parts.length ? parts.join(' ') : '0 minutes';
+}
+els.startTime.addEventListener('change', updateTotalTime);
+els.finishTime.addEventListener('change', updateTotalTime);
+
+// ---- Signature pad ----------------------------------------------------------
+const sigCanvas = document.getElementById('sigPad');
+const sigCtx = sigCanvas.getContext('2d');
+function resizeSigCanvas() {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = sigCanvas.getBoundingClientRect();
+  sigCanvas.width = rect.width * ratio;
+  sigCanvas.height = rect.height * ratio;
+  sigCtx.scale(ratio, ratio);
+  sigCtx.lineWidth = 2;
+  sigCtx.lineCap = 'round';
+  sigCtx.strokeStyle = '#132a45';
+}
+resizeSigCanvas();
+window.addEventListener('resize', () => { resizeSigCanvas(); });
+
+let drawing = false, hasSig = false;
+function pos(e) {
+  const rect = sigCanvas.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+}
+function start(e) { drawing = true; hasSig = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); e.preventDefault(); }
+function move(e) { if (!drawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); e.preventDefault(); }
+function end() { drawing = false; }
+sigCanvas.addEventListener('mousedown', start);
+sigCanvas.addEventListener('mousemove', move);
+window.addEventListener('mouseup', end);
+sigCanvas.addEventListener('touchstart', start, { passive: false });
+sigCanvas.addEventListener('touchmove', move, { passive: false });
+sigCanvas.addEventListener('touchend', end);
+document.getElementById('clearSig').addEventListener('click', () => {
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  hasSig = false;
+});
+
+// ---- File collateral --------------------------------------------------------
+const collected = { photos: [], videos: [], audio: [] };
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function wireUpload(inputId, listId, bucket) {
+  const input = document.getElementById(inputId);
+  const list = document.getElementById(listId);
+  input.addEventListener('change', async () => {
+    for (const file of input.files) {
+      const dataUrl = await fileToDataUrl(file);
+      bucket.push({ name: file.name, mimeType: file.type, dataUrl });
+      const li = document.createElement('li');
+      li.textContent = file.name;
+      list.appendChild(li);
+    }
+  });
+}
+wireUpload('photoInput', 'photoList', collected.photos);
+wireUpload('videoInput', 'videoList', collected.videos);
+wireUpload('audioInput', 'audioList', collected.audio);
+
+// ---- PDF rendering (client-side, matches jsPDF output expected by backend) -
+function buildPdf() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const margin = 40;
+  let y = margin;
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Header bar
+  doc.setFillColor(19, 42, 69);
+  doc.rect(0, 0, pageWidth, 70, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('BLINDMASTER', margin, 32);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('THE COMPLETE OUTDOOR ROOM', margin, 46);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Sales Call', pageWidth - margin, 32, { align: 'right' });
+
+  doc.setTextColor(19, 42, 69);
+  y = 100;
+
+  function heading(text) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(text.toUpperCase(), margin, y);
+    y += 16;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+  }
+  function field(label, value) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(label + ':', margin, y);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(String(value || '—'), pageWidth - margin * 2 - 140);
+    doc.text(lines, margin + 140, y);
+    y += 16 * Math.max(1, lines.length);
+  }
+  function spacer() { y += 10; }
+
+  heading('1. Job Details');
+  field('Client Name', els.clientName.value);
+  field('Opportunity Reference', els.jobRef.value);
+  field('Site Address', els.siteAddress.value);
+  field('Date of Sales Call', els.callDate.value);
+  spacer();
+
+  heading('2. Attendees');
+  field('Customer(s) Present', els.customerPresent.value);
+  const reps = [...els.repRows.querySelectorAll('select')]
+    .map(i => i.value.trim()).filter(Boolean);
+  field('Sales Rep(s) on Site', reps.join(', '));
+  spacer();
+
+  heading('3. Sales Call Notes');
+  const noteLines = doc.splitTextToSize(els.notes.value || '—', pageWidth - margin * 2);
+  doc.text(noteLines, margin, y);
+  y += 14 * noteLines.length + 10;
+
+  heading('5. Rep Sign-Off');
+  field('Reporting Sales Rep', els.reportingRep.value);
+  field('Date Submitted', els.dateSubmitted.value || new Date().toISOString().slice(0, 10));
+  if (hasSig) {
+    doc.text('Signature:', margin, y);
+    y += 6;
+    doc.addImage(sigCanvas.toDataURL('image/png'), 'PNG', margin, y, 200, 60);
+    y += 70;
+  }
+  spacer();
+
+  heading('6. Time on Site');
+  field('Start Time', els.startTime.selectedOptions[0]?.text);
+  field('Finish Time', els.finishTime.selectedOptions[0]?.text);
+  field('Total Time on Site', els.totalTime.textContent);
+
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Blindmaster Pty Ltd · Sales Call · Internal Use — Retain for Client File',
+    pageWidth / 2, doc.internal.pageSize.getHeight() - 20, { align: 'center' });
+
+  return doc.output('datauristring');
+}
+
+// ---- Submit -------------------------------------------------------------
+document.getElementById('scForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  els.status.textContent = '';
+  els.status.className = 'status';
+
+  els.submitBtn.disabled = true;
+  els.submitBtn.textContent = 'Submitting…';
+
+  try {
+    const renderedPdfDataUrl = buildPdf();
+    const mediaFiles = [...collected.photos, ...collected.videos, ...collected.audio];
+
+    const payload = {
+      ref: els.jobRef.value.trim(),
+      client: els.clientName.value.trim(),
+      date: els.callDate.value,
+      renderedPdfDataUrl,
+      mediaFiles,
+    };
+
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      // text/plain avoids a CORS preflight against the Apps Script exec endpoint
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      els.status.textContent = 'Submitted — filed to ' + result.folderName;
+      els.status.className = 'status ok';
+      document.getElementById('scForm').reset();
+    } else {
+      throw new Error(result.error || 'Unknown error');
+    }
+  } catch (err) {
+    els.status.textContent = 'Submit failed: ' + err.message;
+    els.status.className = 'status error';
+  } finally {
+    els.submitBtn.disabled = false;
+    els.submitBtn.textContent = 'Submit Sales Call';
+  }
+});
+</script>
+</body>
+</html>
