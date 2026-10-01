@@ -119,6 +119,8 @@
   }
   .upload-tile .icon { font-size: 26px; }
   .upload-tile .label { font-weight: 700; font-size: 13px; margin-top: 8px; color: var(--navy); }
+  .size-note { font-size: 13px; background: #fff7e0; border: 1px solid #f0d58a; border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; }
+  .size-warn { font-size: 13px; font-weight: 700; color: #b00020; background: #fdecee; border: 1px solid #f3b6bd; border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; }
   .upload-tile .hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .upload-tile input { display: none; }
   .file-list { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12px; color: var(--muted); text-align: left; }
@@ -232,6 +234,8 @@
       <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
         Attach photos, videos, or voice recordings documenting the site, existing structures, or anything relevant to quoting the job.
       </p>
+      <p class="size-note">&#9888; Keep videos short (under 30 seconds). Long videos can make the submission fail &ndash; send those to the office separately instead.</p>
+      <p class="size-warn" id="sizeWarn" hidden></p>
       <div class="collateral-grid">
         <label class="upload-tile">
           <div class="icon">📷</div>
@@ -463,6 +467,19 @@ function fileToDataUrl(file) {
     reader.readAsDataURL(file);
   });
 }
+// Warn (never block) when the attachments are big enough that the upload may time out.
+const SIZE_WARN_MB = 25;
+function updateSizeWarning() {
+  const all = [].concat(collected.photos, collected.videos, collected.audio);
+  const mb = all.reduce((n, f) => n + f.dataUrl.length * 0.75, 0) / (1024 * 1024);
+  const el = document.getElementById('sizeWarn');
+  if (mb > SIZE_WARN_MB) {
+    el.textContent = 'Attachments total about ' + Math.round(mb) + ' MB. This is large and the submission may fail or time out. Remove the biggest video(s) and send them to the office separately.';
+    el.hidden = false;
+  } else {
+    el.hidden = true;
+  }
+}
 function wireUpload(inputId, listId, bucket) {
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
@@ -470,6 +487,7 @@ function wireUpload(inputId, listId, bucket) {
     for (const file of input.files) {
       const dataUrl = await fileToDataUrl(file);
       bucket.push({ name: file.name, mimeType: file.type, dataUrl });
+      updateSizeWarning();
       const li = document.createElement('li');
       li.textContent = file.name;
       list.appendChild(li);
