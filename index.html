@@ -119,8 +119,6 @@
   }
   .upload-tile .icon { font-size: 26px; }
   .upload-tile .label { font-weight: 700; font-size: 13px; margin-top: 8px; color: var(--navy); }
-  .size-note { font-size: 13px; background: #fff7e0; border: 1px solid #f0d58a; border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; }
-  .size-warn { font-size: 13px; font-weight: 700; color: #b00020; background: #fdecee; border: 1px solid #f3b6bd; border-radius: 8px; padding: 8px 12px; margin: 0 0 12px; }
   .upload-tile .hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .upload-tile input { display: none; }
   .file-list { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12px; color: var(--muted); text-align: left; }
@@ -234,21 +232,19 @@
       <p style="font-size:13px; color:var(--muted); margin-top:-8px;">
         Attach photos, videos, or voice recordings documenting the site, existing structures, or anything relevant to quoting the job.
       </p>
-      <p class="size-note">&#9888; Keep videos short (under 30 seconds). Long videos can make the submission fail &ndash; send those to the office separately instead.</p>
-      <p class="size-warn" id="sizeWarn" hidden></p>
       <div class="collateral-grid">
         <label class="upload-tile">
           <div class="icon">📷</div>
           <div class="label">Photos</div>
           <div class="hint">JPG, PNG, HEIC</div>
-          <input type="file" id="photoInput" accept="image/*" multiple>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
           <ul class="file-list" id="photoList"></ul>
         </label>
         <label class="upload-tile">
           <div class="icon">🎬</div>
           <div class="label">Videos</div>
           <div class="hint">MP4, MOV</div>
-          <input type="file" id="videoInput" accept="video/*" multiple>
+          <input type="file" id="videoInput" accept="video/*" capture="environment" multiple>
           <ul class="file-list" id="videoList"></ul>
         </label>
         <label class="upload-tile">
@@ -467,17 +463,26 @@ function fileToDataUrl(file) {
     reader.readAsDataURL(file);
   });
 }
-// Warn (never block) when the attachments are big enough that the upload may time out.
-const SIZE_WARN_MB = 25;
-function updateSizeWarning() {
-  const all = [].concat(collected.photos, collected.videos, collected.audio);
-  const mb = all.reduce((n, f) => n + f.dataUrl.length * 0.75, 0) / (1024 * 1024);
-  const el = document.getElementById('sizeWarn');
-  if (mb > SIZE_WARN_MB) {
-    el.textContent = 'Attachments total about ' + Math.round(mb) + ' MB. This is large and the submission may fail or time out. Remove the biggest video(s) and send them to the office separately.';
-    el.hidden = false;
-  } else {
-    el.hidden = true;
+// Each file is uploaded in its own request, and Apps Script caps a request at
+// ~50MB (base64 adds a third), so refuse anything bigger than this up front.
+const MAX_FILE_BYTES = 30 * 1024 * 1024;
+// Phone photos are 4-8MB each; shrink them so uploads on site stay quick.
+async function shrinkPhoto(file) {
+  if (!file.type.startsWith('image/') || file.size < 1.5 * 1024 * 1024) return null;
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * scale);
+    c.height = Math.round(bmp.height * scale);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    return {
+      name: file.name.replace(/\.[^.]+$/, '') + '.jpg',
+      mimeType: 'image/jpeg',
+      dataUrl: c.toDataURL('image/jpeg', 0.85),
+    };
+  } catch (e) {
+    return null; // unsupported format: fall back to the original file
   }
 }
 function wireUpload(inputId, listId, bucket) {
@@ -485,13 +490,18 @@ function wireUpload(inputId, listId, bucket) {
   const list = document.getElementById(listId);
   input.addEventListener('change', async () => {
     for (const file of input.files) {
-      const dataUrl = await fileToDataUrl(file);
-      bucket.push({ name: file.name, mimeType: file.type, dataUrl });
-      updateSizeWarning();
+      if (file.size > MAX_FILE_BYTES) {
+        alert(file.name + ' is too large (over 30MB) and was not added. Trim or compress it, or send it separately.');
+        continue;
+      }
+      const item = (await shrinkPhoto(file)) ||
+        { name: file.name, mimeType: file.type, dataUrl: await fileToDataUrl(file) };
+      bucket.push(item);
       const li = document.createElement('li');
-      li.textContent = file.name;
+      li.textContent = item.name;
       list.appendChild(li);
     }
+    input.value = '';
   });
 }
 wireUpload('photoInput', 'photoList', collected.photos);
@@ -585,6 +595,35 @@ function buildPdf() {
 }
 
 // ---- Submit -------------------------------------------------------------
+let filedTo = null;       // folder name once the report PDF has been filed
+let pendingMedia = null;  // files still to upload (all of them, or just the failed ones on retry)
+
+// POST one request, with a timeout so a stalled upload fails visibly instead
+// of leaving "Submitting…" on screen forever.
+async function postJson(payload, attempts) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 150000);
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        // text/plain avoids a CORS preflight against the Apps Script exec endpoint
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        signal: ctrl.signal,
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Unknown error');
+      return result;
+    } catch (err) {
+      lastErr = err.name === 'AbortError' ? new Error('timed out — check your signal') : err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastErr;
+}
 document.getElementById('scForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   els.status.textContent = '';
@@ -594,38 +633,53 @@ document.getElementById('scForm').addEventListener('submit', async (e) => {
   els.submitBtn.textContent = 'Submitting…';
 
   try {
-    const renderedPdfDataUrl = buildPdf();
-    const mediaFiles = [...collected.photos, ...collected.videos, ...collected.audio];
+    const ref = els.jobRef.value.trim();
+    const client = els.clientName.value.trim();
 
-    const payload = {
-      ref: els.jobRef.value.trim(),
-      client: els.clientName.value.trim(),
-      date: els.callDate.value,
-      renderedPdfDataUrl,
-      mediaFiles,
-    };
+    // Step 1: file the report PDF on its own (small, fast). Not retried
+    // automatically -- if the reply was lost, a retry could save a duplicate.
+    if (!filedTo) {
+      const result = await postJson({
+        ref, client, date: els.callDate.value, renderedPdfDataUrl: buildPdf(),
+      }, 1);
+      filedTo = result.folderName;
+      pendingMedia = [...collected.photos, ...collected.videos, ...collected.audio];
+    }
 
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      // text/plain avoids a CORS preflight against the Apps Script exec endpoint
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload),
-    });
-    const result = await res.json();
+    // Step 2: photos/videos/audio one request each, so one big or slow file
+    // can't hold up (or time out) the rest.
+    const failed = [];
+    for (let i = 0; i < pendingMedia.length; i++) {
+      els.submitBtn.textContent = 'Uploading file ' + (i + 1) + ' of ' + pendingMedia.length + '…';
+      try {
+        await postJson({ ref, client, mediaFiles: [pendingMedia[i]] }, 2);
+      } catch (err) {
+        failed.push(pendingMedia[i]);
+      }
+    }
 
-    if (result.success) {
-      els.status.textContent = 'Submitted — filed to ' + result.folderName;
+    if (failed.length) {
+      pendingMedia = failed;
+      els.status.textContent = 'Report filed to ' + filedTo + ', but ' + failed.length +
+        ' file(s) did not upload: ' + failed.map(f => f.name).join(', ') +
+        '. Check your signal and tap "Retry failed uploads".';
+      els.status.className = 'status error';
+    } else {
+      els.status.textContent = 'Submitted — filed to ' + filedTo;
       els.status.className = 'status ok';
       document.getElementById('scForm').reset();
-    } else {
-      throw new Error(result.error || 'Unknown error');
+      for (const k of ['photos', 'videos', 'audio']) collected[k].length = 0;
+      for (const id of ['photoList', 'videoList', 'audioList']) document.getElementById(id).innerHTML = '';
+      filedTo = null;
+      pendingMedia = null;
     }
   } catch (err) {
     els.status.textContent = 'Submit failed: ' + err.message;
     els.status.className = 'status error';
   } finally {
     els.submitBtn.disabled = false;
-    els.submitBtn.textContent = 'Submit Sales Call';
+    els.submitBtn.textContent = (pendingMedia && pendingMedia.length)
+      ? 'Retry failed uploads' : 'Submit Sales Call';
   }
 });
 </script>
