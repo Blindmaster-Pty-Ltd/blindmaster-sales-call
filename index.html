@@ -237,14 +237,14 @@
           <div class="icon">📷</div>
           <div class="label">Photos</div>
           <div class="hint">JPG, PNG, HEIC</div>
-          <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+          <input type="file" id="photoInput" accept="image/*" multiple>
           <ul class="file-list" id="photoList"></ul>
         </label>
         <label class="upload-tile">
           <div class="icon">🎬</div>
           <div class="label">Videos</div>
           <div class="hint">MP4, MOV</div>
-          <input type="file" id="videoInput" accept="video/*" capture="environment" multiple>
+          <input type="file" id="videoInput" accept="video/*" multiple>
           <ul class="file-list" id="videoList"></ul>
         </label>
         <label class="upload-tile">
@@ -309,7 +309,9 @@
 // GitHub-Pages-plus-Apps-Script-POST-API pattern after a whole hosting
 // migration off script.google.com. Starting from that file means this form
 // inherits the fix for free instead of hitting the same "Sorry, unable to
-// open the file at present" issue from scratch.
+// open the file at present" issue from scratch. See CLAUDE.md for what
+// still needs doing manually before this is actually live (Apps Script
+// project + a real public repo — SCRIPT_URL below is a placeholder).
 //
 // Fields are a first-draft guess based on the same shape as Check Measure
 // (Job Details / attendees / notes / site collateral / sign-off / time on
