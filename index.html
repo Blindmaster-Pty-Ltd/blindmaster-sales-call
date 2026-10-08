@@ -5,37 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blindmaster — Sales Call</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Blindmaster brand tokens (from the Blindmaster Field App design system) */
   :root {
-    --navy: #132a45;
-    --navy-light: #1c3a5e;
-    --accent: #e2a53a;
-    --border: #e1e5ea;
-    --bg: #f4f6f8;
-    --text: #1b2733;
-    --muted: #6b7684;
+    --navy: #404141;        /* Monument Grey (primary) */
+    --navy-light: #404141;
+    --accent: #9DBCD0;      /* Pastel Blue */
+    --border: #E9E6E0;      /* Sandstone */
+    --bg: #FAFAFA;          /* Natural White */
+    --text: #404141;
+    --muted: #5A5B5B;
     --danger: #d64545;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
   }
   header.brand {
-    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    background: var(--navy);
     color: #fff;
     padding: 24px 20px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     flex-wrap: wrap;
     gap: 8px;
   }
-  header.brand .logo { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
-  header.brand .logo .dot { color: var(--accent); }
-  header.brand .tagline { font-size: 11px; letter-spacing: 2px; opacity: 0.75; margin-top: 2px; }
+  header.brand .wordmark { height: 14px; width: auto; display: block; }
   header.brand .title { font-size: 20px; font-weight: 700; }
 
   main { max-width: 760px; margin: 24px auto; padding: 0 16px 96px; }
@@ -43,7 +44,7 @@
   .card {
     background: #fff;
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: 6px;
     box-shadow: 0 1px 3px rgba(20, 30, 45, 0.06);
     padding: 24px;
     margin-bottom: 20px;
@@ -111,7 +112,7 @@
   @media (max-width: 560px) { .collateral-grid { grid-template-columns: 1fr; } }
   .upload-tile {
     border: 1px solid var(--border);
-    background: #f9fafc;
+    background: #FAFAFA;
     border-radius: 10px;
     padding: 20px 12px;
     text-align: center;
@@ -139,7 +140,7 @@
   .sig-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
   .total-time {
-    background: #eef2fb; border-radius: 8px; padding: 11px 12px;
+    background: #E9E6E0; border-radius: 8px; padding: 11px 12px;
     color: var(--navy); font-weight: 600; font-size: 14px;
   }
 
@@ -177,8 +178,7 @@
 
 <header class="brand">
   <div>
-    <div class="logo">BLINDMASTER<span class="dot">.</span></div>
-    <div class="tagline">THE COMPLETE OUTDOOR ROOM</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 555 62" role="img" aria-label="Blindmaster" class="wordmark"><title>Blindmaster</title><g fill="#ffffff"><path fill-rule="nonzero" d="M548.750 0.235C550.321 0.235 551.668 0.780 552.791 1.935C553.913 3.057 554.491 4.404 554.491 5.975C554.491 7.547 553.945 8.894 552.791 10.016C551.668 11.139 550.321 11.684 548.750 11.684C547.179 11.684 545.832 11.139 544.709 10.016C543.587 8.894 543.041 7.547 543.041 5.975C543.041 4.404 543.587 3.057 544.709 1.935C545.832 0.812 547.179 0.235 548.750 0.235M548.750 10.722C550.065 10.722 551.187 10.241 552.117 9.311C553.048 8.381 553.529 7.258 553.529 5.943C553.529 4.628 553.080 3.506 552.117 2.576C551.187 1.614 550.065 1.165 548.750 1.165C547.435 1.165 546.313 1.614 545.383 2.576C544.453 3.506 543.972 4.628 543.972 5.943C543.972 7.258 544.453 8.381 545.383 9.311C546.313 10.241 547.435 10.722 548.750 10.722M550.482 6.906L551.861 8.798L550.289 8.798L549.103 7.226L547.595 7.226L547.595 8.798L546.184 8.798L546.184 2.961L549.359 2.961C549.969 2.961 550.450 3.185 550.867 3.602C551.284 4.019 551.508 4.532 551.508 5.110C551.508 5.943 551.155 6.553 550.450 6.970L550.482 6.906M550.161 5.045C550.161 4.628 549.808 4.308 549.391 4.308L547.628 4.308L547.628 5.783L549.391 5.783C549.808 5.783 550.161 5.462 550.161 5.045"></path><path fill-rule="nonzero" d="M40.629 39.265C42.297 41.282 43.150 43.765 43.150 46.713C43.150 50.554 41.754 53.929 39.000 56.683C36.245 59.437 33.025 60.756 29.185 60.756L-0.491 60.756L-0.491 11.684L27.827 11.684C31.551 11.684 34.616 13.003 37.215 15.602C39.814 18.201 41.133 21.266 41.133 24.990C41.133 29.490 38.107 33.136 35.314 34.882C37.215 35.813 38.961 37.209 40.590 39.227L40.629 39.265M34.112 45.938C34.112 42.291 31.163 39.420 27.517 39.420L14.599 39.420L17.353 31.507L26.043 31.507C29.340 31.507 31.862 28.908 31.862 25.766C31.862 22.623 29.185 19.947 26.043 19.947L8.276 19.947L8.276 52.571L27.478 52.571C31.125 52.571 34.073 49.623 34.073 45.976L34.112 45.938"></path><path fill-rule="nonzero" d="M87.373 60.718L52.926 60.718L52.926 11.685L61.965 11.685L61.965 52.223L87.373 52.223L87.373 60.718"></path><path fill-rule="nonzero" d="M96.800 60.718L96.800 11.685L105.839 11.685L105.839 60.718L96.800 60.718"></path><path fill-rule="nonzero" d="M165.036 60.718L154.523 60.718L128.493 28.249L128.493 60.718L119.455 60.718L119.455 11.685L125.700 11.685L165.036 60.718M154.989 44.503L154.989 11.685L164.027 11.685L164.027 44.503L154.989 44.503"></path><path fill-rule="nonzero" d="M215.233 18.861C219.927 23.633 222.332 29.374 222.332 36.201C222.332 43.029 219.927 48.770 215.233 53.580C210.539 58.352 204.837 60.718 198.203 60.718L177.100 60.718L177.100 26.581L186.139 29.684L186.139 51.990L197.931 51.990C202.199 51.990 205.768 50.438 208.793 47.374C211.819 44.270 213.332 40.585 213.332 36.201C213.332 31.818 211.780 28.133 208.793 25.029C205.768 21.926 202.199 20.413 197.931 20.413L177.100 20.413L177.100 11.685L198.203 11.685C204.875 11.685 210.539 14.051 215.233 18.823L215.233 18.861"></path><path fill-rule="nonzero" d="M286.494 11.685L260.814 49.973L255.849 49.973L240.836 28.792L240.836 60.718L231.797 60.718L231.797 11.685L238.741 11.685L258.254 39.111L276.680 11.685L286.494 11.685M276.408 60.718L276.408 31.314L285.369 31.314L285.369 60.718L276.408 60.718"></path><path fill-rule="nonzero" d="M343.946 60.718L334.597 60.718L330.174 49.701L306.744 49.701L302.321 60.718L292.972 60.718L313.261 10.288L322.532 10.288L310.041 41.516L326.955 41.516L319.933 23.981L329.204 23.981L343.946 60.718"></path><path fill-rule="nonzero" d="M375.988 33.874C377.307 34.378 378.859 35.076 380.605 35.969C382.428 36.900 383.824 37.792 384.794 38.762C386.811 40.663 388.596 43.727 388.596 47.335C388.596 58.197 378.432 61.766 367.764 61.766C360.665 61.766 353.954 59.942 347.709 56.373L352.286 49.158C357.756 52.184 363.032 53.658 368.152 53.658C375.523 53.658 379.247 51.680 379.247 47.839C379.247 45.822 378.122 44.115 375.600 42.912C373.079 41.594 371.411 41.012 367.454 39.809C367.260 39.732 366.950 39.615 366.756 39.615C364.428 38.917 362.682 38.335 361.480 37.947C360.277 37.520 358.687 36.900 356.786 35.969C354.885 35.038 353.489 34.068 352.519 33.176C350.541 31.197 348.717 28.055 348.717 24.215C348.717 20.374 350.347 17.077 353.644 14.594C357.213 11.995 362.217 10.715 368.734 10.715C375.251 10.715 381.419 12.538 387.665 16.107L383.242 23.128C377.967 20.258 373.001 18.784 368.307 18.784C361.635 18.784 358.144 20.762 358.144 23.827C358.493 26.581 359.773 27.977 363.070 29.490L366.135 30.693L369.859 31.818L370.984 32.167C373.079 32.788 374.786 33.370 376.027 33.835L375.988 33.874"></path><path fill-rule="nonzero" d="M396.238 20.102L396.238 11.685L439.569 11.685L439.569 20.102L396.238 20.102M413.423 28.714L422.384 25.611L422.384 60.679L413.423 60.679L413.423 28.714"></path><path fill-rule="nonzero" d="M489.611 20.103L459.159 20.103L459.159 52.223L489.611 52.223L489.611 60.718L450.120 60.718L450.120 11.685L489.611 11.685L489.611 20.103M465.055 40.430L467.926 31.934L484.335 31.934L484.335 40.430L465.055 40.430"></path><path fill-rule="nonzero" d="M510.442 60.718L501.404 60.718L501.404 11.684L527.201 11.606C531.894 11.606 535.968 13.275 539.265 16.572C542.640 19.869 544.308 23.865 544.308 28.559C544.308 32.128 543.183 35.347 541.011 38.179C538.838 40.972 536.045 42.951 532.438 43.998L546.752 60.679L535.541 60.679L516.106 37.946L523.050 37.946C530.343 37.946 535.269 34.145 535.269 28.559C535.269 26.386 534.493 24.486 532.864 22.934C531.313 21.382 529.412 20.606 527.201 20.606L510.442 20.606L510.442 60.718"></path></g></svg>
   </div>
   <div class="title">Sales Call</div>
 </header>
@@ -194,8 +194,10 @@
           <input type="text" id="clientName" required>
         </div>
         <div class="field">
-          <label>Opportunity Reference</label>
-          <input type="text" id="jobRef" placeholder="e.g. 9791 or Opp #9791">
+          <label>Opportunity<span class="req">*</span></label>
+          <select id="oppSelect" required><option value="" disabled selected>Loading opportunities&hellip;</option></select>
+          <input type="text" id="jobRefManual" placeholder="Type the Opportunity number, e.g. 9791" style="display:none;margin-top:8px">
+          <input type="hidden" id="jobRef">
         </div>
         <div class="field">
           <label>Site Address<span class="req">*</span></label>
@@ -237,7 +239,7 @@
           <div class="icon">📷</div>
           <div class="label">Photos</div>
           <div class="hint">JPG, PNG, HEIC</div>
-          <input type="file" id="photoInput" accept="image/*" capture="environment" multiple>
+          <input type="file" id="photoInput" accept="image/*" multiple>
           <ul class="file-list" id="photoList"></ul>
         </label>
         <label class="upload-tile">
@@ -335,6 +337,8 @@ const PREFILL = {
 const els = {
   clientName: document.getElementById('clientName'),
   jobRef: document.getElementById('jobRef'),
+  oppSelect: document.getElementById('oppSelect'),
+  jobRefManual: document.getElementById('jobRefManual'),
   siteAddress: document.getElementById('siteAddress'),
   callDate: document.getElementById('callDate'),
   customerPresent: document.getElementById('customerPresent'),
@@ -351,9 +355,46 @@ const els = {
 
 // ---- Prefill from URL params -------------------------------------------------
 if (PREFILL.client) els.clientName.value = PREFILL.client;
-if (PREFILL.ref) els.jobRef.value = PREFILL.ref;
 if (PREFILL.address) els.siteAddress.value = PREFILL.address;
 if (PREFILL.date) els.callDate.value = PREFILL.date;
+
+
+// ---- Opportunity dropdown (list kept fresh from NetSuite by the watchdog) ---
+const OTHER = '__other__';
+let oppId = '';
+function normRef(v) { return String(v || '').replace(/\D/g, ''); }
+function setManualMode(on, value) {
+  els.jobRefManual.style.display = on ? 'block' : 'none';
+  els.jobRefManual.required = on;
+  if (on) { els.jobRefManual.value = value || ''; els.jobRef.value = normRef(value); oppId = ''; }
+}
+function selectOpp(number) {
+  const opt = [...els.oppSelect.options].find(o => o.dataset.number === number);
+  if (opt) { els.oppSelect.value = opt.value; applyOpp(opt); }
+  else if (number) { els.oppSelect.value = OTHER; setManualMode(true, number); }
+}
+function applyOpp(opt) {
+  if (opt.value === OTHER) { setManualMode(true, ''); return; }
+  setManualMode(false);
+  els.jobRef.value = opt.dataset.number;
+  oppId = opt.dataset.id;
+  if (!els.siteAddress.value) els.siteAddress.value = opt.dataset.address;
+}
+els.oppSelect.addEventListener('change', () => applyOpp(els.oppSelect.selectedOptions[0]));
+els.jobRefManual.addEventListener('input', () => { els.jobRef.value = normRef(els.jobRefManual.value); });
+(async function loadOpps() {
+  let list = [];
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=opportunities');
+    const data = await res.json();
+    if (data.success) list = data.opportunities;
+  } catch (e) { /* fall through to manual entry */ }
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  els.oppSelect.innerHTML = '<option value="" disabled selected>Select opportunity&hellip;</option>' +
+    list.map(o => `<option value="${esc(o.number)}" data-id="${esc(o.id)}" data-number="${esc(o.number)}" data-address="${esc(o.address)}">Opp ${esc(o.number)} — ${esc(o.address)}</option>`).join('') +
+    `<option value="${OTHER}">Other / not listed…</option>`;
+  if (PREFILL.ref) selectOpp(normRef(PREFILL.ref));
+})();
 
 // ---- Sales rep list -----------------------------------------------------
 // Same staff roster as the Check Measure form's installer list — there's no
@@ -384,17 +425,19 @@ function addRepRow(value) {
 addRepRow();
 document.getElementById('addRep').addEventListener('click', () => addRepRow());
 
-// ---- Hourly time dropdowns (6:00 AM to 5:00 PM, on the hour) ---------------
-function hourLabel(h) {
+// ---- Half-hourly time dropdowns (6:00 AM to 5:30 PM, every 30 minutes) -----
+function timeLabel(h, m) {
   const period = h < 12 ? 'AM' : 'PM';
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return h12 + ':00 ' + period;
+  return h12 + ':' + String(m).padStart(2, '0') + ' ' + period;
 }
 function buildHourOptions() {
   let html = '<option value="" disabled selected>Select time&hellip;</option>';
   for (let h = 6; h <= 17; h++) {
-    const value = String(h).padStart(2, '0') + ':00';
-    html += `<option value="${value}">${hourLabel(h)}</option>`;
+    for (const m of [0, 30]) {
+      const value = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      html += `<option value="${value}">${timeLabel(h, m)}</option>`;
+    }
   }
   return html;
 }
@@ -517,20 +560,17 @@ function buildPdf() {
   const pageWidth = doc.internal.pageSize.getWidth();
 
   // Header bar
-  doc.setFillColor(19, 42, 69);
+  doc.setFillColor(64, 65, 65);
   doc.rect(0, 0, pageWidth, 70, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text('BLINDMASTER', margin, 32);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('THE COMPLETE OUTDOOR ROOM', margin, 46);
+  doc.text('BLINDMASTER', margin, 40);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Sales Call', pageWidth - margin, 32, { align: 'right' });
+  doc.text('Sales Call', pageWidth - margin, 40, { align: 'right' });
 
-  doc.setTextColor(19, 42, 69);
+  doc.setTextColor(64, 65, 65);
   y = 100;
 
   function heading(text) {
@@ -596,7 +636,8 @@ function buildPdf() {
 
 // ---- Submit -------------------------------------------------------------
 let filedTo = null;       // folder name once the report PDF has been filed
-let pendingMedia = null;  // files still to upload (all of them, or just the failed ones on retry)
+let pendingMedia = null;
+let emailNote = '';  // files still to upload (all of them, or just the failed ones on retry)
 
 // POST one request, with a timeout so a stalled upload fails visibly instead
 // of leaving "Submitting…" on screen forever.
@@ -641,8 +682,12 @@ document.getElementById('scForm').addEventListener('submit', async (e) => {
     if (!filedTo) {
       const result = await postJson({
         ref, client, date: els.callDate.value, renderedPdfDataUrl: buildPdf(),
+        oppId, address: els.siteAddress.value.trim(),
+        reps: [...els.repRows.querySelectorAll('select')].map(i => i.value.trim()).filter(Boolean),
+        reportingRep: els.reportingRep.value,
       }, 1);
       filedTo = result.folderName;
+      emailNote = result.emailSent === false ? ' (email notification failed: ' + (result.emailError || 'unknown') + ')' : '';
       pendingMedia = [...collected.photos, ...collected.videos, ...collected.audio];
     }
 
@@ -665,9 +710,10 @@ document.getElementById('scForm').addEventListener('submit', async (e) => {
         '. Check your signal and tap "Retry failed uploads".';
       els.status.className = 'status error';
     } else {
-      els.status.textContent = 'Submitted — filed to ' + filedTo;
+      els.status.textContent = 'Submitted — filed to ' + filedTo + emailNote;
       els.status.className = 'status ok';
       document.getElementById('scForm').reset();
+      setManualMode(false); els.jobRef.value = ''; oppId = '';
       for (const k of ['photos', 'videos', 'audio']) collected[k].length = 0;
       for (const id of ['photoList', 'videoList', 'audioList']) document.getElementById(id).innerHTML = '';
       filedTo = null;
