@@ -125,19 +125,11 @@
   .file-list { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12px; color: var(--muted); text-align: left; }
   .file-list li { padding: 2px 0; word-break: break-all; }
 
-  canvas#sigPad {
-    width: 100%; height: 160px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    touch-action: none;
-    background: #fff;
+  input[readonly] {
+    background: #F3F2EE;
+    color: var(--muted);
+    cursor: default;
   }
-  .sig-actions { margin-top: 8px; }
-  .sig-actions button {
-    border: 1px solid var(--border); background: #fff; border-radius: 6px;
-    padding: 6px 12px; font-size: 12px; cursor: pointer;
-  }
-  .sig-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
   .total-time {
     background: #E9E6E0; border-radius: 8px; padding: 11px 12px;
@@ -205,7 +197,7 @@
         </div>
         <div class="field">
           <label>Date of Sales Call<span class="req">*</span></label>
-          <input type="text" id="callDate" class="dmy" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" autocomplete="off" required>
+          <input type="text" id="callDate" class="dmy" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" autocomplete="off" required readonly>
         </div>
       </div>
     </section>
@@ -271,10 +263,6 @@
           <input type="text" id="dateSubmitted" class="dmy" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" pattern="\d{2}/\d{2}/\d{4}" autocomplete="off">
         </div>
       </div>
-      <label>Signature</label>
-      <canvas id="sigPad"></canvas>
-      <div class="sig-actions"><button type="button" id="clearSig">Clear</button></div>
-      <p class="sig-note">Or, if signing isn't possible on this device, select your name in "Reporting Sales Rep" above as your digital confirmation.</p>
     </section>
 
     <section class="card">
@@ -306,21 +294,14 @@
 
 <script>
 // ---------------------------------------------------------------------------
-// Built 2026-09-30 by copying the Check Measure form's proven shape
-// (docs/check-measure/index.html), which itself only reached this static-
-// GitHub-Pages-plus-Apps-Script-POST-API pattern after a whole hosting
-// migration off script.google.com. Starting from that file means this form
-// inherits the fix for free instead of hitting the same "Sorry, unable to
-// open the file at present" issue from scratch. See CLAUDE.md for what
-// still needs doing manually before this is actually live (Apps Script
-// project + a real public repo — SCRIPT_URL below is a placeholder).
-//
-// Fields are a first-draft guess based on the same shape as Check Measure
-// (Job Details / attendees / notes / site collateral / sign-off / time on
-// site), NOT yet confirmed against a real Sales Call template the way
-// Check Measure's fields were reconstructed from an actual saved PDF —
-// there's no equivalent surviving example for Sales Call. Reconcile with
-// Jan before treating this as final.
+// This file is synced from the LIVE blindmaster-sales-call GitHub Pages
+// repo (2026-10-12) -- it had drifted significantly ahead of the version
+// previously kept here (NetSuite-fed Opportunity dropdown, dd/mm/yyyy
+// dates, chunked per-file upload with retry, client-side photo shrinking --
+// see CLAUDE.md for the full list). Edit the LIVE repo's copy going
+// forward (or re-sync here first) rather than assuming this file is
+// current -- it is a snapshot, not necessarily still authoritative by the
+// time you read this.
 // ---------------------------------------------------------------------------
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnJtybFIuDUJHq0qrVVDytBICne3yv85W3yI5FcvKMBm8G0Y7hzlS-_eaw5_0XlHaC/exec';
 
@@ -380,7 +361,6 @@ function autoSlash(input) {
 if (PREFILL.client) els.clientName.value = PREFILL.client;
 if (PREFILL.address) els.siteAddress.value = PREFILL.address;
 if (PREFILL.date) els.callDate.value = isoToDmy(PREFILL.date);
-autoSlash(els.callDate);
 autoSlash(els.dateSubmitted);
 
 
@@ -485,42 +465,6 @@ function updateTotalTime() {
 }
 els.startTime.addEventListener('change', updateTotalTime);
 els.finishTime.addEventListener('change', updateTotalTime);
-
-// ---- Signature pad ----------------------------------------------------------
-const sigCanvas = document.getElementById('sigPad');
-const sigCtx = sigCanvas.getContext('2d');
-function resizeSigCanvas() {
-  const ratio = window.devicePixelRatio || 1;
-  const rect = sigCanvas.getBoundingClientRect();
-  sigCanvas.width = rect.width * ratio;
-  sigCanvas.height = rect.height * ratio;
-  sigCtx.scale(ratio, ratio);
-  sigCtx.lineWidth = 2;
-  sigCtx.lineCap = 'round';
-  sigCtx.strokeStyle = '#132a45';
-}
-resizeSigCanvas();
-window.addEventListener('resize', () => { resizeSigCanvas(); });
-
-let drawing = false, hasSig = false;
-function pos(e) {
-  const rect = sigCanvas.getBoundingClientRect();
-  const p = e.touches ? e.touches[0] : e;
-  return { x: p.clientX - rect.left, y: p.clientY - rect.top };
-}
-function start(e) { drawing = true; hasSig = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); e.preventDefault(); }
-function move(e) { if (!drawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); e.preventDefault(); }
-function end() { drawing = false; }
-sigCanvas.addEventListener('mousedown', start);
-sigCanvas.addEventListener('mousemove', move);
-window.addEventListener('mouseup', end);
-sigCanvas.addEventListener('touchstart', start, { passive: false });
-sigCanvas.addEventListener('touchmove', move, { passive: false });
-sigCanvas.addEventListener('touchend', end);
-document.getElementById('clearSig').addEventListener('click', () => {
-  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-  hasSig = false;
-});
 
 // ---- File collateral --------------------------------------------------------
 const collected = { photos: [], videos: [], audio: [] };
@@ -639,12 +583,6 @@ function buildPdf() {
   heading('5. Rep Sign-Off');
   field('Reporting Sales Rep', els.reportingRep.value);
   field('Date Submitted', els.dateSubmitted.value || todayDmy());
-  if (hasSig) {
-    doc.text('Signature:', margin, y);
-    y += 6;
-    doc.addImage(sigCanvas.toDataURL('image/png'), 'PNG', margin, y, 200, 60);
-    y += 70;
-  }
   spacer();
 
   heading('6. Time on Site');
